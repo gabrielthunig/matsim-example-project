@@ -18,9 +18,16 @@
  * *********************************************************************** */
 package org.matsim.example;
 
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.NetworkFactory;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -40,10 +47,37 @@ public class HelloWorld {
 		config.controler().setOverwriteFileSetting( OverwriteFileSetting.deleteDirectoryIfExists );
 
 		// This creates a default matsim scenario (which is empty):
-		Scenario scenario = ScenarioUtils.createScenario(config) ;
+		Scenario scenario = ScenarioUtils.createScenario(config);
+		
+		// create network
+		Network network = scenario.getNetwork();
+		NetworkFactory nf = network.getFactory();
+		
+		Id<Link> id = Id.createLinkId("dummyLink1");
+		Coord coord1 = new Coord(0, 0);
+		Node fromNode = nf.createNode(Id.createNodeId("dummyNode1"), coord1);
+		Coord coord2 = new Coord(1, 1);
+		Node toNode = nf.createNode(Id.createNodeId("dummyNode2"), coord2 );
+		Link link = nf.createLink(id, fromNode, toNode);
+		network.addNode(fromNode);
+		network.addNode(toNode);
+		network.addLink(link );
+		
 
 		Controler controler = new Controler( scenario ) ;
 
+		controler.addOverridingModule(new AbstractModule(){
+
+			@Override
+			public void install() {
+				this.bindMobsim().toProvider(MyMobsimProvider.class);
+				this.bind(Scenario.class).to(Scenario.class);
+			}
+			
+		});
+		
+		controler.setDirtyShutdown(true);
+		
 		// This indeed runs iterations, but based on an empty scenario:
 		controler.run();
 
