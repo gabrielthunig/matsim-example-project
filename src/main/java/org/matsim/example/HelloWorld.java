@@ -61,7 +61,7 @@ public class HelloWorld {
 		Link link = nf.createLink(id, fromNode, toNode);
 		network.addNode(fromNode);
 		network.addNode(toNode);
-		network.addLink(link );
+		network.addLink(link);
 		
 
 		Controler controler = new Controler( scenario ) ;
